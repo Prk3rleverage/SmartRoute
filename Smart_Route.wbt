@@ -1,0 +1,57 @@
+#VRML_SIM R2025a utf8
+
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/backgrounds/protos/TexturedBackground.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/backgrounds/protos/TexturedBackgroundLight.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/floors/protos/RectangleArena.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/robots/gctronic/e-puck/protos/E-puck.proto"
+IMPORTABLE EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/solids/protos/SolidBox.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/rocks/protos/Rock.proto"
+
+WorldInfo {
+}
+Viewpoint {
+  orientation -0.01805819435494716 -0.9991883394720582 0.036007830810952005 5.352985357330101
+  position -2.645962995091943 -0.6163095112019119 3.6905445588682557
+}
+TexturedBackground {
+}
+TexturedBackgroundLight {
+}
+RectangleArena {
+  translation -0.01 0 0
+  floorSize 2 2
+  floorTileSize 0.7 0.7
+}
+SolidBox {
+  translation 0.68 -0.66 0.2
+  name "box(3)"
+  size 0.5 0.5 0.5
+}
+SolidBox {
+  translation 0.38 0.7 0.2
+  name "box(4)"
+  size 0.5 0.5 0.5
+}
+E-puck {
+  translation -0.92468 -0.69 3.60161e-05
+  rotation -9.373053853700314e-06 0.9999999929182002 0.00011864124726905459 7.090698040431023e-05
+  controller "Smart_Route_Controller"
+  supervisor TRUE
+}
+Rock {
+  translation 0.93 0.96 0
+}
+SolidBox {
+  translation 0 -0.07 0.13
+  size 0.25 0.25 0.25
+}
+SolidBox {
+  translation -0.55 0.49 0.26
+  name "box(1)"
+  size 0.5 0.5 0.5
+}
+SolidBox {
+  translation -0.29 -0.57 0.25
+  name "box(2)"
+  size 0.5 0.5 0.5
+}
