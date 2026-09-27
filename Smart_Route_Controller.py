@@ -6,14 +6,15 @@ from astar import a_star
 from grid import world_to_grid
 from sensors import setup_sensors, read_sensors
 from navigation import move_forward, stop, turn_left, turn_right, correct_left, correct_right
+from fsm import RobotState
 import math
 
 
 # Create the Robot instance
 robot = Supervisor()
 
-# Boolean to help with getting around the boxes
-avoiding_obstacle = False
+# Current state of the robot
+state = RobotState.FOLLOW_PATH
 avoid_direction = None
 
 # Get the time step of the current world
@@ -47,6 +48,18 @@ obstacles = set()
 path = a_star(start_grid, goal_grid, obstacles)
 
 print("A* path:", path)
+
+def replan_path(x, y):
+    current_grid = world_to_grid(x, y, start_x, start_y, cell_size)
+
+    print("Replanning A*")
+    print("New start grid:", current_grid)
+
+    new_path = a_star(current_grid, goal_grid, obstacles)
+
+    print("New A* path:", new_path)
+
+    return new_path
 
 path_index = 1
 
@@ -106,6 +119,9 @@ while robot.step(timestep) != -1:
 
     # Calculate the angle from the robot to the next waypoint
     target_angle = math.atan2(target_y - y, target_x - x)
+    
+    # Calculate distance to the current A* waypoint
+    distance_to_waypoint = ((target_x - x) ** 2 + (target_y - y) ** 2) ** 0.5
 
     # Get the robot's current rotation
     rotation = rotation_field.getSFRotation()
@@ -154,6 +170,12 @@ while robot.step(timestep) != -1:
     left_front = sensor_values[7]
     left_fside = sensor_values[6]
     left_side = sensor_values[5]
+    
+    # Back sensors
+    back_right = sensor_values[3]
+    back_left = sensor_values[4]
+
+    print("Back sensors:", back_right, back_left)
 
     # Check if something is in front of the robot
     obstacle_detected = (
@@ -161,8 +183,8 @@ while robot.step(timestep) != -1:
     left_front > 100 or left_fside > 100
     )
 
-    # If we are already avoiding an obstacle
-    if avoiding_obstacle:
+    # If we are currently avoiding an obstacle
+    if state == RobotState.AVOID_OBSTACLE:
 
         print("Avoiding obstacle")
 
@@ -205,17 +227,25 @@ while robot.step(timestep) != -1:
             if (right_front <= 100 and right_fside <= 100 and
                     right_side <= 100 and
                     left_front <= 100 and left_fside <= 100 and
-                    left_side <= 100):
+                    left_side <= 100 and
+                    back_right <= 80 and
+                    back_left <= 80):
 
                 print("Obstacle completely clear")
-                avoiding_obstacle = False
+                
+                # Recalculate A* from the robot's current position
+                path = replan_path(x, y)
+                path_index = 1
+                
+                print("CHANGING STATE TO FOLLOW_PATH")
+                state = RobotState.FOLLOW_PATH
                 avoid_direction = None
 
-    # If we are NOT currently avoiding an obstacle
-    elif obstacle_detected:
+    # If an obstacle is detected while following the path
+    elif state == RobotState.FOLLOW_PATH and obstacle_detected:
 
         print("Obstacle detected!")
-        avoiding_obstacle = True
+        state = RobotState.AVOID_OBSTACLE
 
         # Decide which direction to initially turn
         right_total = right_front + right_fside + right_side
@@ -232,23 +262,21 @@ while robot.step(timestep) != -1:
             avoid_direction = "right"
             print("Starting right obstacle avoidance")
             turn_right(left_motor, right_motor, 3.0)
-
-    else:
-
-        # No obstacle and not avoiding one.
-        # Follow the A* waypoint.
-
-        if angle_difference < -0.2:
-
-            print("Turning right toward A* waypoint")
-            turn_right(left_motor, right_motor, 3.0)
-
-        elif angle_difference > 0.2:
-
-            print("Turning left toward A* waypoint")
-            turn_left(left_motor, right_motor, 3.0)
-
-        else:
-
-            # We are facing close enough to the waypoint
-            move_forward(left_motor, right_motor, 3.0)
+   
+   # Follow the A* path normally
+    elif state == RobotState.FOLLOW_PATH:
+   
+       # Follow the A* waypoint
+       if angle_difference < -0.2:
+           
+           print("Turning right toward A* waypoint") 
+           turn_right(left_motor, right_motor, 3.0)
+           
+       elif angle_difference > 0.2: 
+       
+           print("Turning left toward A* waypoint") 
+           turn_left(left_motor, right_motor, 3.0)
+           
+       else: 
+           # We are facing close enough to the waypoint 
+           move_forward(left_motor, right_motor, 3.0)
