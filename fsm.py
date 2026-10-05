@@ -1,9 +1,3 @@
-###########
-# Program Name: Project 4
-# Programmer: Rachel Young
-# Date: 9/25/26
-###########
-
 from enum import Enum
 
 
